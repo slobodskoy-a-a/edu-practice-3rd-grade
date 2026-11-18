@@ -9,8 +9,11 @@ public final class HoneyBatch {
     private final BigDecimal moisturePercent;
 
     public HoneyBatch(long id, String variety, BigDecimal weightKg, BigDecimal moisturePercent) {
-        if (variety == null || variety.isBlank() || weightKg.signum() <= 0) {
+        if (variety == null || variety.isBlank() || weightKg == null || weightKg.signum() <= 0) {
             throw new IllegalArgumentException("Сорт и масса партии обязательны");
+        }
+        if (moisturePercent == null || moisturePercent.signum() < 0 || moisturePercent.compareTo(new BigDecimal("30")) > 0) {
+            throw new IllegalArgumentException("Влажность должна быть от 0 до 30 процентов");
         }
         this.id = id;
         this.variety = variety;

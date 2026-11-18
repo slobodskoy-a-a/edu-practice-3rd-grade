@@ -8,6 +8,7 @@ from pathlib import Path
 
 DATABASE = Path(__file__).with_name("honey.db")
 SCHEMA = Path(__file__).parents[1] / "database" / "schema.sql"
+TRIGGERS = SCHEMA.with_name("triggers.sql")
 
 
 def connect() -> sqlite3.Connection:
@@ -19,6 +20,7 @@ def connect() -> sqlite3.Connection:
 
 def initialize_database(connection: sqlite3.Connection) -> None:
     connection.executescript(SCHEMA.read_text(encoding="utf-8"))
+    connection.executescript(TRIGGERS.read_text(encoding="utf-8"))
     connection.execute(
         "INSERT OR IGNORE INTO apiary(apiary_id, name, location) VALUES (1, ?, ?)",
         ("Пасека Северная", "Московская область"),
@@ -27,7 +29,8 @@ def initialize_database(connection: sqlite3.Connection) -> None:
 
 
 def add_batch(connection: sqlite3.Connection, variety: str, weight: float, moisture: float) -> None:
-    if not variety.strip() or weight <= 0 or not 0 <= moisture <= 30:
+    import math
+    if not variety.strip() or not math.isfinite(weight) or weight <= 0 or not 0 <= moisture <= 30:
         raise ValueError("Проверьте сорт, массу и влажность партии.")
     status = "accepted" if moisture <= 20 else "rejected"
     connection.execute(
@@ -46,7 +49,8 @@ def package_batch(connection: sqlite3.Connection, batch_id: int, volume_g: int, 
         raise ValueError("Партия не найдена.")
     if batch["quality_status"] != "accepted":
         raise ValueError("Нельзя фасовать партию, не прошедшую контроль качества.")
-    if volume_g <= 0 or quantity <= 0 or price < 0:
+    import math
+    if volume_g <= 0 or quantity <= 0 or not math.isfinite(price) or price < 0:
         raise ValueError("Объем, количество и цена должны быть корректными.")
     packed_grams = connection.execute(
         "SELECT COALESCE(SUM(container_volume_g * quantity), 0) FROM packaging WHERE batch_id = ?", (batch_id,)
@@ -120,6 +124,9 @@ def main() -> None:
                 print("Выберите пункт меню от 0 до 5.")
             except ValueError as error:
                 print(f"Ошибка: {error}")
+            except sqlite3.IntegrityError as error:
+                connection.rollback()
+                print(f"Ошибка данных: {error}")
     finally:
         connection.close()
 

@@ -3,5 +3,7 @@ java/out/
 java/target/
 .tools/
 *.class
+__pycache__/
+*.pyc
 python/honey.db
 ~$*.docx

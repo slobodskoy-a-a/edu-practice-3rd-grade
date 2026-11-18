@@ -9,6 +9,7 @@ public final class HoneyServiceTest {
         rejectsPackagingForRejectedBatch();
         preventsOverPackagingAcrossProducts();
         preventsSaleBeyondStock();
+        rejectsEmptyCustomerWithoutReducingStock();
         registersSaleAndReducesStock();
         System.out.println("All HoneyService tests passed.");
     }
@@ -43,6 +44,13 @@ public final class HoneyServiceTest {
         Sale sale = service.sell(1, product.id(), 1, "Покупатель");
         check(product.quantity() == 1, "После продажи должна остаться одна банка");
         check(sale.total().compareTo(new BigDecimal("650")) == 0, "Сумма продажи должна быть 650");
+    }
+
+    private static void rejectsEmptyCustomerWithoutReducingStock() {
+        HoneyService service = new HoneyService();
+        Product product = service.packageHoney(1, batch("18.0", "1.0"), 500, 2, BigDecimal.ONE);
+        expectIllegalArgument(() -> service.sell(1, product.id(), 1, " "));
+        check(product.quantity() == 2, "Неуспешная продажа не должна менять остаток");
     }
 
     private static HoneyBatch batch(String moisture, String weight) {
