@@ -1,0 +1,5 @@
+# Build artifacts and local databases
+java/out/
+*.class
+python/honey.db
+~$*.docx
