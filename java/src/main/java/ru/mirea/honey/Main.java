@@ -1,9 +1,15 @@
 package ru.mirea.honey;
 
 import java.math.BigDecimal;
+import java.nio.file.Path;
 
 public final class Main {
     public static void main(String[] args) throws Exception {
+        if (args.length == 2 && "--initialize-database".equals(args[0])) {
+            DatabaseInitializer.initialize(args[1], Path.of("..", "database"));
+            System.out.println("SQLite-база создана и заполнена демонстрационными данными.");
+            return;
+        }
         if (args.length == 2 && "--database".equals(args[0])) {
             showDatabaseBalances(args[1]);
             return;

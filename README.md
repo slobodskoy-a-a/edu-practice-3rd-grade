@@ -20,6 +20,7 @@
 | `docs/report-content.md` | материалы для основной части отчета |
 | `docs/english-abstract.md` | аннотация, глоссарий и перевод на английский язык |
 | `docs/test-cases.md` | тестовые сценарии |
+| `TODO.md` | список завершения работы перед сдачей |
 
 ## Быстрый запуск Python-версии
 
@@ -53,7 +54,8 @@ Java-версия демонстрирует те же правила предм
 
 ```powershell
 cd java
-mvn compile exec:java -Dexec.mainClass=ru.mirea.honey.Main -Dexec.args="--database ..\python\honey.db"
+..\tools\mvn.ps1 compile exec:java -Dexec.mainClass=ru.mirea.honey.Main -Dexec.args="--initialize-database ..\python\honey.db"
+..\tools\mvn.ps1 compile exec:java -Dexec.mainClass=ru.mirea.honey.Main -Dexec.args="--database ..\python\honey.db"
 ```
 
 Режим `--database` выводит остатки напрямую из SQLite. Обычный запуск без аргументов остаётся объектной демонстрацией фасовки и продажи в памяти.
