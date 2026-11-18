@@ -1,5 +1,6 @@
 # Build artifacts and local databases
 java/out/
+java/target/
 .tools/
 *.class
 python/honey.db
