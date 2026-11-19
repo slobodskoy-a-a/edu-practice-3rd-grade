@@ -1,71 +1,91 @@
-# Информационная система производства, фасовки и реализации мёда
+# Учёт производства, фасовки и продажи мёда
 
-Учебный проект для производственной практики по теме «Производство, фасовка и реализация мёда».
+Учебный проект демонстрирует регистрацию партий мёда, контроль допуска к фасовке, учёт фасованной продукции и оформление продаж. Доступный остаток рассчитывается с учётом неотменённых заказов.
 
-Проект показывает автоматизацию трех связанных операций:
+В проекте представлены процедурное консольное приложение на Python, объектно-ориентированная реализация на Java и база данных SQLite. Описание предметной области, модели, алгоритмы и результаты тестирования приведены в отчёте:
 
-1. учет партий мёда, полученных на пасеке;
-2. фасовка партий в товарные единицы;
-3. оформление продаж и контроль остатка готовой продукции.
+- [Отчёт в Word](Отчет_Учебная_практика_дополненный.docx)
+- [Отчёт в PDF](Отчет_Учебная_практика_дополненный.pdf)
 
-## Структура
+## Структура проекта
 
-| Путь | Назначение |
+| Путь | Содержимое |
 | --- | --- |
-| `database/schema.sql` | физическая модель данных SQLite |
-| `database/seed.sql` | демонстрационные данные для БД |
-| `docs/bpmn/honey-production-sales.bpmn` | BPMN 2.0 модель основного бизнес-процесса |
-| `python/honey_accounting.py` | процедурная консольная реализация на Python |
-| `java/src/main/java/ru/mirea/honey` | объектно-ориентированная реализация на Java |
-| `docs/report-content.md` | материалы для основной части отчета |
-| `docs/english-abstract.md` | аннотация, глоссарий и перевод на английский язык |
-| `docs/test-cases.md` | тестовые сценарии |
-| `TODO.md` | список завершения работы перед сдачей |
+| `python/honey_accounting.py` | Консольное приложение на Python |
+| `python/test_integration.py` | Семь сценариев проверки Python и SQLite |
+| `java/src/main/java/ru/mirea/honey/` | Классы Java-приложения |
+| `java/src/test/java/ru/mirea/honey/HoneyServiceTest.java` | Шесть проверок объектной модели Java |
+| `database/schema.sql` | Таблицы и представление остатков SQLite |
+| `database/triggers.sql` | Ограничения операций с партиями, фасовками и продажами |
+| `database/seed.sql` | Демонстрационные данные |
+| `tools/python_demo.py` | Запуск Python с временной базой для демонстрации |
+| `tools/mvn.ps1` | Запуск локального Maven, если он установлен в `.tools` |
+| `test-java.cmd` | Компиляция и запуск Java-тестов с табличным выводом |
 
-## Быстрый запуск Python-версии
+## Python
 
-Требуется Python 3.10 или новее. В папке проекта выполните:
-
-```powershell
-python python/honey_accounting.py
-```
-
-Программа создаёт файл `honey.db` рядом со скриптом. Через меню можно добавить партию, выполнить фасовку, оформить продажу и посмотреть остатки.
-
-## Демонстрационные данные
-
-После создания структуры БД выполните содержимое `database/seed.sql` в SQLite-клиенте. Скрипт добавит две пасеки, три партии, три фасовки и три заказа. Одна партия намеренно имеет статус `rejected`, чтобы показать запрет её фасовки; отменённый заказ не уменьшает доступный остаток.
-
-## Запуск Java-версии
-
-Корневой `pom.xml` подключает каталог `java` как Maven-модуль, чтобы VS Code распознавал и основной код, и `java/src/test/java`. После первого открытия проекта дождитесь импорта Maven; если редактор продолжает показывать предупреждение о classpath, выполните команду VS Code **Java: Clean Java Language Server Workspace** и дождитесь переимпорта.
-
-Требуется JDK 17 или новее:
+Требуется Python 3.9 или новее. Из корня проекта:
 
 ```powershell
-cd java
-javac -encoding UTF-8 -d out src/main/java/ru/mirea/honey/*.java
-java -cp out ru.mirea.honey.Main
+py -3.9 python/honey_accounting.py
 ```
 
-Java-версия демонстрирует те же правила предметной области через классы `HoneyBatch`, `Product`, `Sale` и `HoneyService`.
+При первом запуске создаётся `python/honey.db`. Через меню доступны добавление партии, фасовка, продажа, просмотр партий и остатков. Для работы с той же базой через DBeaver выберите подключение SQLite и укажите путь к этому файлу.
 
-### Подключение Java к SQLite
+Демонстрация с временной базой, которая удаляется после выхода:
 
-В `java/pom.xml` добавлен драйвер SQLite JDBC, а `SqliteHoneyRepository` читает представление `v_product_balance`. После создания и заполнения базы данных запустите проект через Maven:
+```powershell
+py -3.9 tools/python_demo.py
+```
+
+Запуск тестов:
+
+```powershell
+cd python
+py -3.9 test_integration.py
+```
+
+Тесты используют независимую базу в памяти и выводят таблицу входных данных и результатов.
+
+## Java
+
+Требуется JDK 16 или новее. Для демонстрации объектов в PowerShell из корня проекта:
 
 ```powershell
 cd java
-..\tools\mvn.ps1 compile exec:java -Dexec.mainClass=ru.mirea.honey.Main -Dexec.args="--initialize-database ..\python\honey.db"
-..\tools\mvn.ps1 compile exec:java -Dexec.mainClass=ru.mirea.honey.Main -Dexec.args="--database ..\python\honey.db"
+javac -encoding UTF-8 -d out -sourcepath src/main/java src/main/java/ru/mirea/honey/Main.java
+$OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new()
+java "-Dfile.encoding=UTF-8" -cp out ru.mirea.honey.Main
 ```
 
-Режим `--database` выводит остатки напрямую из SQLite. Обычный запуск без аргументов остаётся объектной демонстрацией фасовки и продажи в памяти.
-
-Для интерактивной фасовки и продажи в той же базе из папки `java`:
+Обычный запуск показывает фасовку и продажу в памяти; данные этого примера не записываются в базу. Для запуска проверок из папки `java`:
 
 ```powershell
-..\tools\mvn.ps1 compile exec:java -Dexec.mainClass=ru.mirea.honey.Main -Dexec.args="--interactive ..\python\honey.db"
+..\test-java.cmd
 ```
 
-При первом подключении Java устанавливает ограничения из `database/triggers.sql` в существующую базу. Фасовка и продажа записываются в SQLite; продажа сохраняется в одной транзакции.
+## Java и SQLite
+
+Для работы с SQLite нужен Maven и доступ к зависимости SQLite JDBC, указанной в `java/pom.xml`. Выполняйте команды из папки `java`:
+
+```powershell
+# Создать схему и загрузить примеры, если таблица партий пуста
+mvn compile exec:java "-Dexec.mainClass=ru.mirea.honey.Main" "-Dexec.args=--initialize-database ../python/honey.db"
+
+# Показать остатки
+mvn compile exec:java "-Dexec.mainClass=ru.mirea.honey.Main" "-Dexec.args=--database ../python/honey.db"
+
+# Открыть интерактивное меню фасовки и продажи
+mvn compile exec:java "-Dexec.mainClass=ru.mirea.honey.Main" "-Dexec.args=--interactive ../python/honey.db"
+```
+
+При работе в Windows с локальным Maven из `.tools` вместо `mvn` можно использовать `powershell -NoProfile -ExecutionPolicy Bypass -File ..\tools\mvn.ps1`. Каталог `.tools` в Git не входит; на другом компьютере потребуется установить Maven или подготовить локальную копию.
+
+Если русский текст в терминале отображается некорректно, перед запуском Maven выполните:
+
+```powershell
+$OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new()
+$env:JAVA_TOOL_OPTIONS = "-Dfile.encoding=UTF-8"
+```
+
+Инициализация создаёт схему и добавляет демонстрационные данные только при отсутствии партий. Учебная проверка влажности не заменяет лабораторный контроль качества мёда.
