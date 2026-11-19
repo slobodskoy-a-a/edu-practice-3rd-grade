@@ -38,6 +38,8 @@ python python/honey_accounting.py
 
 ## Запуск Java-версии
 
+Корневой `pom.xml` подключает каталог `java` как Maven-модуль, чтобы VS Code распознавал и основной код, и `java/src/test/java`. После первого открытия проекта дождитесь импорта Maven; если редактор продолжает показывать предупреждение о classpath, выполните команду VS Code **Java: Clean Java Language Server Workspace** и дождитесь переимпорта.
+
 Требуется JDK 17 или новее:
 
 ```powershell
